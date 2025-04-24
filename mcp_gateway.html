@@ -3,665 +3,742 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MCP网关详解</title>
+    <title>MCP网关解析</title>
+    <!-- 引入现代UI框架 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- 引入字体 -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- 引入图标 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- 引入动画库 -->
+    <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #2563eb;
-            --secondary-color: #3b82f6;
-            --accent-color: #60a5fa;
-            --text-color: #1e293b;
-            --light-bg: #f8fafc;
-            --border-color: #e2e8f0;
-        }
-        
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
+            --primary-color: #2d3748;
+            --secondary-color: #4a5568;
+            --accent-color: #5a67d8;
+            --text-color: #e2e8f0;
+            --background-dark: #1a202c;
+            --card-bg: #2d3748;
+            --border-color: #4a5568;
         }
         
         body {
-            font-family: 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
-            line-height: 1.6;
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: var(--background-dark);
             color: var(--text-color);
-            background-color: var(--light-bg);
-            padding: 0;
-            margin: 0;
+            line-height: 1.6;
         }
         
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-        
-        header {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
-            padding: 3rem 0;
-            text-align: center;
-            margin-bottom: 2rem;
-            border-radius: 0 0 1rem 1rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-        }
-        
-        .subtitle {
-            font-size: 1.2rem;
-            opacity: 0.9;
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        
-        section {
-            background-color: white;
-            border-radius: 1rem;
-            padding: 2rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            border: 1px solid var(--border-color);
-        }
-        
-        h2 {
-            color: var(--primary-color);
-            margin-bottom: 1.5rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 2px solid var(--accent-color);
-            font-size: 1.8rem;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        h2:after {
-            content: "⬇️";
-            font-size: 1.2rem;
-            transition: transform 0.3s ease;
-        }
-        
-        h2.collapsed:after {
-            content: "➡️";
-        }
-        
-        h3 {
-            color: var(--secondary-color);
-            margin: 1.5rem 0 1rem 0;
-            font-size: 1.3rem;
-        }
-        
-        p {
-            margin-bottom: 1rem;
-        }
-        
-        ul, ol {
-            margin-left: 2rem;
-            margin-bottom: 1.5rem;
-        }
-        
-        li {
-            margin-bottom: 0.5rem;
+        h1, h2, h3, h4, h5, h6 {
+            color: #fff;
+            font-weight: 600;
         }
         
         .card {
-            background-color: white;
-            border-radius: 0.5rem;
-            padding: 1.5rem;
-            margin-bottom: 1rem;
-            border-left: 4px solid var(--accent-color);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-        
-        .case-study {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1.5rem;
-        }
-        
-        .case-card {
-            flex: 1 1 300px;
-            background-color: white;
-            border-radius: 0.5rem;
-            padding: 1.5rem;
+            background-color: var(--card-bg);
             border: 1px solid var(--border-color);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            border-radius: 8px;
+            color: var(--text-color);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            margin-bottom: 1.5rem;
         }
         
-        .case-card h4 {
-            color: var(--primary-color);
-            margin-bottom: 0.75rem;
-            font-size: 1.2rem;
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
         }
         
-        .diagram {
-            background-color: #f8fafc;
-            border-radius: 0.5rem;
-            padding: 1.5rem;
-            margin: 1.5rem 0;
+        .card-header {
+            background-color: rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 600;
+        }
+        
+        .list-group-item {
+            background-color: var(--card-bg);
+            border-color: var(--border-color);
+            color: var(--text-color);
+        }
+        
+        .table {
+            color: var(--text-color);
+        }
+        
+        .table thead {
+            background-color: rgba(0, 0, 0, 0.2);
+        }
+        
+        .table-bordered td, .table-bordered th {
+            border-color: var(--border-color);
+        }
+        
+        .badge {
+            padding: 0.5em 0.75em;
+            font-weight: 500;
+        }
+        
+        .badge-primary {
+            background-color: var(--accent-color);
+        }
+        
+        .header-section {
+            padding: 60px 0 30px;
+        }
+        
+        .section {
+            padding: 40px 0;
+        }
+        
+        code {
+            background-color: rgba(0, 0, 0, 0.3);
+            color: #f8f9fa;
+            padding: 0.2em 0.4em;
+            border-radius: 3px;
+        }
+        
+        .svg-container {
+            width: 100%;
             text-align: center;
-            border: 1px dashed var(--border-color);
+            margin: 2rem 0;
         }
         
-        .diagram img, .diagram svg {
+        .svg-container img {
             max-width: 100%;
             height: auto;
         }
         
-        footer {
-            text-align: center;
-            padding: 2rem 0;
-            color: #64748b;
-            font-size: 0.9rem;
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin-bottom: 2rem;
         }
         
-        .highlight {
-            background-color: #eff6ff;
-            padding: 0.2rem 0.4rem;
-            border-radius: 0.25rem;
-            font-weight: bold;
-            color: var(--primary-color);
-        }
-        
-        .info-box {
-            background-color: #f0f9ff;
-            border-left: 4px solid #0ea5e9;
-            padding: 1rem;
-            margin: 1rem 0;
-            border-radius: 0.25rem;
-        }
-        
-        .section-content {
-            overflow: hidden;
-            transition: max-height 0.5s ease;
-            max-height: 2000px;
-        }
-        
-        .section-content.collapsed {
-            max-height: 0;
-        }
-        
-        .comparison-table {
-            width: 100%;
-            border-collapse: collapse;
+        .quote {
+            border-left: 4px solid var(--accent-color);
+            padding-left: 1rem;
+            font-style: italic;
             margin: 1.5rem 0;
         }
         
-        .comparison-table th, .comparison-table td {
-            padding: 0.75rem;
-            border: 1px solid var(--border-color);
+        .highlight {
+            color: var(--accent-color);
+            font-weight: 500;
         }
         
-        .comparison-table th {
-            background-color: #f1f5f9;
-            font-weight: bold;
-            text-align: left;
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: var(--accent-color);
         }
         
-        .comparison-table tr:nth-child(even) {
-            background-color: #f8fafc;
+        /* 自定义动画 */
+        .animated-card {
+            transition: all 0.3s ease;
         }
         
-        @media (max-width: 768px) {
-            .container {
-                padding: 1rem;
-            }
-            
-            h1 {
-                font-size: 2rem;
-            }
-            
-            h2 {
-                font-size: 1.5rem;
-            }
-            
-            .case-card {
-                flex: 1 1 100%;
-            }
+        .animated-card:hover {
+            background-color: rgba(90, 103, 216, 0.1);
+            border-color: var(--accent-color);
+        }
+        
+        .divider {
+            height: 4px;
+            width: 70px;
+            background-color: var(--accent-color);
+            margin: 2rem auto;
+        }
+        
+        .comparison-table td, .comparison-table th {
+            vertical-align: middle;
         }
     </style>
 </head>
 <body>
-    <header>
+    <!-- 导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top" style="background-color: var(--primary-color);">
         <div class="container">
-            <h1>MCP网关详解</h1>
-            <div class="subtitle">连接AI与真实世界的桥梁 - 理解MCP架构中的核心组件</div>
+            <a class="navbar-brand" href="#">MCP网关解析</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#overview">概述</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#problems">核心问题</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#value">企业价值</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#practices">实践案例</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#relationship">与MCP Server关系</a>
+                    </li>
+                </ul>
+            </div>
         </div>
-    </header>
-    
+    </nav>
+
+    <!-- 主要内容 -->
     <div class="container">
-        <section>
-            <h2>MCP网关存在的必要性</h2>
-            <div class="section-content">
-                <p>在大型语言模型(LLM)与外部世界的交互过程中，直接连接模型与工具会带来诸多问题和挑战。MCP网关的出现正是为了解决这些问题，其存在具有必然性。</p>
-                
-                <div class="card">
-                    <h3>1. 没有MCP网关时存在的问题</h3>
-                    <ul>
-                        <li><strong>安全风险增加</strong>：AI模型可能直接访问敏感系统或数据，缺乏统一的安全控制层，增加了数据泄露和系统入侵的风险</li>
-                        <li><strong>认证复杂度高</strong>：每个工具和服务需要单独的认证机制，导致凭证管理混乱，增加维护成本和安全隐患</li>
-                        <li><strong>无法统一管理调用</strong>：缺乏集中的调用管理和监控能力，难以追踪AI行为和解决问题</li>
-                        <li><strong>扩展性受限</strong>：随着工具数量增加，连接和管理复杂度呈指数级增长，系统变得难以维护</li>
-                        <li><strong>缺乏负载平衡</strong>：无法根据系统负载情况智能分配请求，容易导致某些服务过载</li>
-                        <li><strong>版本兼容问题</strong>：服务API变更时，需要同时修改所有客户端，难以平滑升级</li>
-                    </ul>
-                </div>
-                
-                <div class="card">
-                    <h3>2. 直接连接架构的局限性</h3>
-                    <p>在没有MCP网关的情况下，LLM客户端与各种工具和服务之间的连接呈现"网状结构"：</p>
-                    <ul>
-                        <li><strong>n × m 连接问题</strong>：如果有n个客户端和m个服务，那么需要维护n×m个连接点，随着规模增长变得难以管理</li>
-                        <li><strong>重复开发</strong>：每个连接点都需要实现认证、错误处理、重试逻辑等，导致大量重复代码</li>
-                        <li><strong>一致性难保证</strong>：分散的实现方式使得难以保证所有连接点遵循相同的安全标准和业务规则</li>
-                        <li><strong>难以监控和审计</strong>：缺乏统一的监控点，难以全面追踪和审计AI的行为</li>
-                    </ul>
-                </div>
-                
-                <div class="card">
-                    <h3>3. MCP网关的必然性</h3>
-                    <p>MCP网关的出现是解决上述问题的必然选择，它遵循了软件架构的关键原则：</p>
-                    <ul>
-                        <li><strong>关注点分离原则</strong>：将通信管理、安全控制与具体功能实现分离，使各组件专注于自己的核心职责</li>
-                        <li><strong>单一责任原则</strong>：MCP网关专注于连接管理、安全控制和请求路由，而服务器专注于具体功能实现</li>
-                        <li><strong>开闭原则</strong>：系统对扩展开放（可以轻松添加新工具），对修改关闭（无需修改现有代码）</li>
-                        <li><strong>最小权限原则</strong>：通过网关可以实现精细的权限控制，确保每个请求只能访问所需的最小资源集</li>
-                    </ul>
-                </div>
-                
-                <div class="info-box">
-                    <p>随着AI系统复杂度和规模的增长，MCP网关已经从"可选组件"变成了"必要基础设施"，成为构建安全、可扩展、高性能AI系统的关键架构要素。</p>
-                </div>
-                
-                <div class="comparison-table">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>对比维度</th>
-                                <th>无网关架构</th>
-                                <th>有MCP网关架构</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>安全控制</td>
-                                <td>分散实现，不一致</td>
-                                <td>统一管理，标准化</td>
-                            </tr>
-                            <tr>
-                                <td>连接复杂度</td>
-                                <td>O(n×m)</td>
-                                <td>O(n+m)</td>
-                            </tr>
-                            <tr>
-                                <td>维护成本</td>
-                                <td>高（多处修改）</td>
-                                <td>低（集中管理）</td>
-                            </tr>
-                            <tr>
-                                <td>监控和可观测性</td>
-                                <td>难以全面实现</td>
-                                <td>统一监控点</td>
-                            </tr>
-                            <tr>
-                                <td>扩展性</td>
-                                <td>受限（需修改客户端）</td>
-                                <td>高（透明添加服务）</td>
-                            </tr>
-                            <tr>
-                                <td>服务升级</td>
-                                <td>复杂（同步修改）</td>
-                                <td>平滑（网关适配）</td>
-                            </tr>
-                        </tbody>
-                    </table>
+        <!-- 概述部分 -->
+        <section id="overview" class="header-section">
+            <div class="row">
+                <div class="col-lg-12 text-center">
+                    <h1 class="mb-4">MCP网关</h1>
+                    <div class="divider"></div>
                 </div>
             </div>
-        </section>
-        
-        <section>
-            <h2>MCP网关的定义</h2>
-            <div class="section-content">
-                <p>MCP（Model-Call-Provider）网关是连接大语言模型（LLM）客户端与MCP服务之间的中介组件，是整个MCP架构中的关键部分。它不仅仅是一个简单的通信管道，而是具有丰富功能的系统组件。</p>
-                
-                <div class="info-box">
-                    <strong>核心职责：</strong>MCP网关负责统一管理连接、分配任务、执行安全验证、处理认证授权以及智能路由请求。
-                </div>
-                
-                <p>从技术架构角度看，MCP网关类似于传统的API网关，但针对AI工具调用场景进行了专门优化。它在LLM与各种服务、API和工具之间提供了一个标准化接口层，使AI能够安全、高效地与外部世界交互。</p>
-                
-                <div class="card">
-                    <h3>现实世界的类比：智能商业中心</h3>
-                    <p>理解MCP网关的一个好方法是将其比作一个智能商业中心或"一站式服务大厅"：</p>
-                    <ul>
-                        <li><strong>接待与引导</strong>：就像商业中心的接待处，MCP网关接收访客（客户端请求），验证身份（认证），并引导他们前往正确的服务窗口（选择合适的MCP服务）</li>
-                        <li><strong>安保系统</strong>：类似于商业中心的安保系统，网关监控所有进出流量，防止未授权访问和潜在威胁</li>
-                        <li><strong>服务导航</strong>：像商场的导航系统，引导客户找到所需的特定服务，而不必了解复杂的内部结构</li>
-                        <li><strong>客流管理</strong>：在高峰期分流客户，确保每个服务窗口不会过载，提供平衡的体验</li>
-                        <li><strong>翻译服务</strong>：当客户与服务提供商使用不同"语言"时提供翻译，确保双方能够顺畅沟通</li>
-                    </ul>
-                    <p>就像一个高效的商业中心可以同时服务多个客户并连接多种服务，MCP网关也能够处理来自多个AI客户端的请求，并将它们路由到适当的服务提供者。</p>
-                </div>
-                
-                <div class="card">
-                    <h3>另一个类比：代理商/经纪人</h3>
-                    <p>MCP网关也类似于现实世界中的代理商或经纪人角色：</p>
-                    <ul>
-                        <li><strong>销售代理</strong>：代表多家公司提供服务，负责客户关系管理和交易促成</li>
-                        <li><strong>旅行社</strong>：为旅客提供各种服务预订，处理认证、支付和行程安排</li>
-                        <li><strong>人才中介</strong>：连接求职者与用人单位，进行初步筛选和匹配</li>
-                    </ul>
-                    <p>这些代理角色都承担了连接、验证、匹配和协调的功能，与MCP网关在AI系统中的角色高度相似。</p>
-                </div>
-                
-                <div class="diagram">
-                    <object data="mcp_architecture.svg" type="image/svg+xml" width="800" height="600">
-                        <img src="mcp_architecture.svg" alt="MCP架构示意图" width="800">
-                    </object>
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <div class="card animated-card" data-aos="fade-up">
+                        <div class="card-body">
+                            <div class="quote">
+                                MCP网关就像企业IT里的"万能转接头+海关检查口"，它把形形色色的MCP Server（具体工具或数据源）聚合在一起，对外呈现单一路径与统一证件，解决协议转换、权限治理和规模化运维等痛点，从而让LLM-Agent或应用只对接一次就能安全、可观测地访问整个工具生态。
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </section>
-        
-        <section>
-            <h2>MCP网关的核心功能</h2>
-            <div class="section-content">
-                <div class="card">
-                    <h3>1. 统一认证和权限控制</h3>
-                    <p>MCP网关通过标准化的方式管理客户端的身份验证和权限控制，确保只有授权的用户和客户端可以访问特定的MCP服务和工具。它支持多种认证方式，包括：</p>
-                    <ul>
-                        <li>OAuth 2.0/OpenID Connect认证</li>
-                        <li>API密钥认证</li>
-                        <li>JWT（JSON Web Token）认证</li>
-                        <li>多因素认证（MFA）</li>
-                    </ul>
-                    <p>通过集中式的权限管理，MCP网关能够实现细粒度的访问控制，防止未授权的工具调用和资源访问。</p>
+            
+            <!-- 模式演进图 -->
+            <!-- <div class="row mt-5">
+                <div class="col-lg-12">
+                    <div class="card" data-aos="fade-up" data-aos-delay="100">
+                        <div class="card-header">
+                            <h3 class="text-center mb-0">MCP应用模式演进</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="svg-container">
+                                <img src="mcp_mode.jpg" alt="MCP应用从单层模式到网络模式的演进" class="img-fluid">
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                
-                <div class="card">
-                    <h3>2. 流量调度和负载均衡</h3>
-                    <p>MCP网关能够根据服务器的负载情况、客户端的请求类型和优先级，智能地分配流量。这种调度机制确保了系统的：</p>
-                    <ul>
-                        <li>高可用性：当某个服务实例出现故障时，自动将流量转移到健康的实例</li>
-                        <li>性能优化：根据响应时间和系统负载选择最优的服务路径</li>
-                        <li>成本控制：对资源密集型操作进行合理分配，避免资源浪费</li>
-                        <li>流量限制：实施速率限制和配额管理，防止滥用</li>
-                    </ul>
-                </div>
-                
-                <div class="card">
-                    <h3>3. 安全验证和防护</h3>
-                    <p>作为系统的安全关口，MCP网关执行多层次的安全验证和防护措施：</p>
-                    <ul>
-                        <li>输入验证和净化：检查并过滤潜在的恶意输入</li>
-                        <li>安全扫描：对请求内容进行安全分析，检测潜在威胁</li>
-                        <li>加密传输：确保数据在传输过程中的安全性（TLS/SSL）</li>
-                        <li>防DDoS攻击：实施流量控制和异常检测机制</li>
-                        <li>安全审计：记录所有访问和操作行为，便于追溯</li>
-                    </ul>
-                </div>
-                
-                <div class="card">
-                    <h3>4. 智能工具选择和编排</h3>
-                    <p>MCP网关能够根据客户端请求和上下文信息，智能地选择和组合合适的工具和服务：</p>
-                    <ul>
-                        <li>根据请求内容和意图自动路由到最合适的服务</li>
-                        <li>支持工具链和服务编排，实现复杂操作序列</li>
-                        <li>提供版本控制和兼容性管理，确保API演化的平滑过渡</li>
-                        <li>实现工具调用的上下文管理和状态跟踪</li>
-                    </ul>
-                </div>
-                
-                <div class="card">
-                    <h3>5. 可观测性和监控</h3>
-                    <p>MCP网关提供全面的可观测性能力，帮助运维团队实时了解系统状态：</p>
-                    <ul>
-                        <li>请求跟踪：记录完整的请求生命周期，便于问题诊断</li>
-                        <li>性能指标：收集和展示关键性能指标（响应时间、成功率等）</li>
-                        <li>日志聚合：集中管理和分析系统日志</li>
-                        <li>告警机制：在异常情况下及时通知相关人员</li>
-                        <li>使用分析：提供工具调用模式和使用趋势分析</li>
-                    </ul>
-                </div>
-            </div>
-        </section>
-        
-        <section>
-            <h2>MCP网关的实践案例</h2>
-            <div class="section-content">
-                <div class="case-study">
-                    <div class="case-card">
-                        <h4>Zapier的MCP全流程方案</h4>
-                        <p>Zapier推出了一种创新的MCP全流程方案，通过动态MCP端点将AI助手与其广泛的集成网络连接起来。</p>
-                        <ul>
-                            <li>支持对超过<span class="highlight">8,000+</span>个应用的直接访问</li>
-                            <li>允许AI执行真实动作，如发送Slack消息或管理Google Calendar事件</li>
-                            <li>透明处理身份验证、API限制和安全性，让开发者专注于核心功能</li>
-                            <li>提供统一的错误处理和重试机制，增强系统稳定性</li>
-                        </ul>
-                        <p>Zapier的方案代表了MCP网关在SaaS集成领域的成功实践，大幅降低了AI与现有SaaS服务集成的技术门槛。</p>
-                    </div>
-                    
-                    <div class="case-card">
-                        <h4>腾讯云MCP托管</h4>
-                        <p>腾讯云推出的MCP托管服务提供企业级MCP网关解决方案，支持多种AI模型连接外部工具和服务。</p>
-                        <ul>
-                            <li>云原生架构，支持弹性伸缩和高可用部署</li>
-                            <li>内置工具市场，提供200+预集成工具和API</li>
-                            <li>完善的认证和权限管理体系，符合企业安全要求</li>
-                            <li>提供统一的监控和运维平台，简化管理复杂度</li>
-                            <li>支持私有化部署和定制化工具开发</li>
-                        </ul>
-                        <p>腾讯云MCP托管服务特别适合企业级用户，提供了全面的MCP生态支持和技术保障。</p>
-                    </div>
-                    
-                    <div class="case-card">
-                        <h4>阿里百炼MCP</h4>
-                        <p>阿里云推出的百炼MCP平台将大模型能力与阿里云生态无缝连接。</p>
-                        <ul>
-                            <li>支持通义千问、文心一言等国产大模型接入</li>
-                            <li>内置阿里云产品工具库，覆盖计算、存储、数据库等服务</li>
-                            <li>提供低代码工具定义界面，降低开发门槛</li>
-                            <li>实现细粒度的访问控制和操作审计</li>
-                            <li>支持自定义工具链和服务编排</li>
-                        </ul>
-                        <p>百炼MCP网关充分利用了阿里云的基础设施优势，为企业提供了国产化的MCP解决方案。</p>
-                    </div>
-                    
-                    <div class="case-card">
-                        <h4>Anthropic的Claude与MCP集成</h4>
-                        <p>Anthropic的Claude AI模型通过MCP网关提供了强大的工具调用能力：</p>
-                        <ul>
-                            <li>支持实时数据检索和分析</li>
-                            <li>提供安全的文件操作和代码执行环境</li>
-                            <li>集成第三方服务，如天气查询、地图服务等</li>
-                            <li>实现多工具协同，处理复杂任务</li>
-                        </ul>
-                        <p>Claude的MCP实现展示了大型语言模型如何通过标准化网关接口显著扩展其功能范围。</p>
-                    </div>
-                    
-                    <div class="case-card">
-                        <h4>Nacos MCP网关应用</h4>
-                        <p>Nacos作为服务发现和配置管理平台，也可以作为MCP网关的核心组件：</p>
-                        <ul>
-                            <li>服务注册与发现：工具和服务自动注册，便于网关动态发现</li>
-                            <li>动态配置管理：实时更新网关路由和策略，无需重启</li>
-                            <li>健康检查：自动监测服务状态，剔除不健康节点</li>
-                            <li>多集群管理：支持跨区域部署和灾备</li>
-                        </ul>
-                        <p>基于Nacos构建的MCP网关具有极强的扩展性和灵活性，适合复杂多变的企业环境。</p>
-                    </div>
-                    
-                    <div class="case-card">
-                        <h4>Higress Remote MCP</h4>
-                        <p>Higress作为云原生API网关，提供了Remote MCP方案：</p>
-                        <ul>
-                            <li>基于Envoy的高性能代理组件</li>
-                            <li>支持多集群流量管理和服务治理</li>
-                            <li>提供丰富的流量控制策略和安全规则</li>
-                            <li>无侵入式集成，支持与现有系统共存</li>
-                            <li>开源架构，便于企业二次开发和定制</li>
-                        </ul>
-                        <p>Higress Remote MCP特别适合Kubernetes环境下的MCP网关部署，提供了云原生的服务治理能力。</p>
-                    </div>
-                    
-                    <div class="case-card">
-                        <h4>国内iPaaS平台的MCP实践</h4>
-                        <p>国内的多家iPaaS（集成平台即服务）提供商已开始构建自己的MCP网关解决方案：</p>
-                        <ul>
-                            <li><strong>腾讯轻联</strong>：提供企业级MCP网关，支持丰富的连接器和预构建工作流</li>
-                            <li><strong>集简云</strong>：专注于国内场景的MCP集成方案，提供本地化支持和合规保障</li>
-                            <li><strong>阿里云集成中心</strong>：结合阿里云生态，为AI应用提供强大的集成能力</li>
-                            <li><strong>行业特定解决方案</strong>：针对金融、医疗等特定领域的垂直MCP网关</li>
-                        </ul>
-                        <p>这些平台通过标准化的MCP网关功能，简化了企业级AI应用与现有业务系统的集成。</p>
+            </div> -->
+            
+            <!-- 通俗类比 -->
+            <div class="row mt-5">
+                <div class="col-lg-12">
+                    <div class="card" data-aos="fade-up">
+                        <div class="card-header">
+                            <h3 class="mb-0">通俗类比：MCP网关像什么？</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered comparison-table">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 30%">类比</th>
+                                            <th>对应MCP网关职能</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <strong>USB-C集线器</strong>
+                                                <i class="bi bi-usb-c ms-2 text-primary"></i>
+                                            </td>
+                                            <td>不同形状的USB/HDMI/网线都可插进Hub，再用同一根USB-C线连到电脑 —— MCP网关把STDIO、gRPC、REST等多种Server端传输适配成统一的HTTP+SSE接口给客户端使用</td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <strong>机场海关</strong>
+                                                <i class="bi bi-shield-check ms-2 text-primary"></i>
+                                            </td>
+                                            <td>旅客（请求）先过海关验身份、安检、打包行李，再被分派到登机口 —— 网关在企业DMZ做身份认证、权限校验、限流与审计，然后把调用路由到相应的MCP Server</td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <strong>Nginx/API Gateway</strong>
+                                                <i class="bi bi-hdd-network ms-2 text-primary"></i>
+                                            </td>
+                                            <td>后端有上百个微服务，但前端只认api.company.com —— 同理，Agent只连网关，内部的数据库Server、GitHub Server、SAP Server等细节对它透明</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </section>
         
-        <section>
-            <h2>MCP网关与MCP服务器的关系</h2>
-            <div class="section-content">
-                <p>MCP网关和MCP服务器是MCP架构中的两个相互依存的核心组件，它们共同构成了完整的MCP系统。</p>
-                
-                <div class="card">
-                    <h3>1. 功能分工</h3>
-                    <p><strong>MCP网关</strong>负责请求的接收、验证、路由和转发，是系统的"前端"组件，关注通信和管理层面的问题。</p>
-                    <p><strong>MCP服务器</strong>则专注于实际工具的执行和业务逻辑处理，是系统的"后端"组件，负责与各种外部服务和API进行实际交互。</p>
-                </div>
-                
-                <div class="card">
-                    <h3>2. 关系模式</h3>
-                    <ul>
-                        <li><strong>中介与执行关系</strong>：网关作为客户端和服务器之间的中介，负责请求的管理和分发；服务器则负责具体工具的执行</li>
-                        <li><strong>抽象与实现关系</strong>：网关提供统一的抽象接口，隐藏后端实现的复杂性；服务器则实现具体的业务功能</li>
-                        <li><strong>安全与功能关系</strong>：网关关注安全控制和访问管理；服务器专注于功能实现和服务质量</li>
-                        <li><strong>多对多关系</strong>：一个网关可以连接多个服务器，一个服务器也可以被多个网关访问，形成灵活的部署结构</li>
-                    </ul>
-                </div>
-                
-                <div class="card">
-                    <h3>3. 协作方式</h3>
-                    <p>网关和服务器通过标准化的协议和接口进行通信，形成完整的请求-响应流程：</p>
-                    <ol>
-                        <li>客户端向网关发送请求</li>
-                        <li>网关验证请求，进行认证和授权</li>
-                        <li>网关根据请求内容选择合适的服务器</li>
-                        <li>网关将请求转发给选中的服务器</li>
-                        <li>服务器处理请求，执行对应的工具或服务</li>
-                        <li>服务器将结果返回给网关</li>
-                        <li>网关进行必要的后处理和格式转换</li>
-                        <li>网关将最终结果返回给客户端</li>
-                    </ol>
-                </div>
-                
-                <div class="info-box">
-                    <p><strong>关键区别：</strong>MCP网关专注于"连接管理、路由和安全"，而MCP服务器专注于"工具执行和业务逻辑"。两者相互配合，共同实现MCP系统的完整功能。</p>
+        <!-- 核心问题部分 -->
+        <section id="problems" class="section">
+            <div class="row">
+                <div class="col-lg-12 text-center">
+                    <h2 class="mb-4">MCP网关要解决的核心问题</h2>
+                    <div class="divider"></div>
                 </div>
             </div>
-        </section>
-        
-        <section>
-            <h2>MCP网关的技术实现</h2>
-            <div class="section-content">
-                <div class="card">
-                    <h3>1. 架构模式</h3>
-                    <p>MCP网关通常采用微服务或API网关架构，常见的实现方式包括：</p>
-                    <ul>
-                        <li><strong>基于云原生技术</strong>：利用Kubernetes、Service Mesh等技术构建可扩展网关</li>
-                        <li><strong>事件驱动架构</strong>：采用消息队列和事件总线处理异步请求</li>
-                        <li><strong>无服务器架构</strong>：使用AWS Lambda、Azure Functions等构建弹性伸缩的网关</li>
-                        <li><strong>混合部署模式</strong>：结合云服务和本地部署，满足不同安全和性能需求</li>
-                    </ul>
+            
+            <div class="row">
+                <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="0">
+                    <div class="card h-100 animated-card">
+                        <div class="card-body text-center">
+                            <div class="feature-icon">
+                                <i class="bi bi-arrow-repeat"></i>
+                            </div>
+                            <h4>协议与传输统一</h4>
+                            <p>把MCP规定的STDIO或gRPC流式接口转换成企业常用的HTTP+SSE/WebSocket，兼容防火墙与云负载均衡</p>
+                        </div>
+                    </div>
                 </div>
                 
-                <div class="card">
-                    <h3>2. 技术栈选择</h3>
-                    <p>主流的MCP网关实现通常基于以下技术：</p>
-                    <ul>
-                        <li><strong>API网关框架</strong>：Kong、APISIX、Tyk等</li>
-                        <li><strong>服务网格</strong>：Istio、Linkerd、Consul Connect等</li>
-                        <li><strong>编程语言</strong>：Go、Node.js、Java、Python等</li>
-                        <li><strong>协议支持</strong>：REST、gRPC、GraphQL、WebSocket等</li>
-                        <li><strong>身份验证</strong>：OAuth 2.0、JWT、SAML等</li>
-                    </ul>
+                <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="card h-100 animated-card">
+                        <div class="card-body text-center">
+                            <div class="feature-icon">
+                                <i class="bi bi-shield-lock"></i>
+                            </div>
+                            <h4>身份与权限治理</h4>
+                            <p>插入LDAP/OIDC、API Key、细粒度ACL，确保不同角色只能调用授权工具或资源</p>
+                        </div>
+                    </div>
                 </div>
                 
-                <div class="card">
-                    <h3>3. 性能优化</h3>
-                    <p>高性能MCP网关通常采用以下优化技术：</p>
-                    <ul>
-                        <li>缓存机制：减少重复请求和计算</li>
-                        <li>异步处理：非阻塞IO和事件循环</li>
-                        <li>连接池：高效管理后端连接</li>
-                        <li>限流和熔断：防止系统过载</li>
-                        <li>压缩和优化：减少传输数据量</li>
-                    </ul>
+                <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="200">
+                    <div class="card h-100 animated-card">
+                        <div class="card-body text-center">
+                            <div class="feature-icon">
+                                <i class="bi bi-diagram-3"></i>
+                            </div>
+                            <h4>多Server聚合与路由</h4>
+                            <p>对接多个领域Server并做名字空间隔离，按工具名自动把请求转发到对应后端；支持版本控制与A/B灰度发布</p>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </section>
-        
-        <section>
-            <h2>MCP网关的未来趋势</h2>
-            <div class="section-content">
-                <div class="case-study">
-                    <div class="case-card">
-                        <h4>智能化增强</h4>
-                        <p>未来的MCP网关将自身融入AI能力，实现更智能的请求处理：</p>
-                        <ul>
-                            <li>智能请求理解和意图识别</li>
-                            <li>自适应路由和动态服务选择</li>
-                            <li>自动化安全威胁检测和防御</li>
-                            <li>基于使用模式的性能优化</li>
-                        </ul>
+                
+                <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="300">
+                    <div class="card h-100 animated-card">
+                        <div class="card-body text-center">
+                            <div class="feature-icon">
+                                <i class="bi bi-bar-chart-line"></i>
+                            </div>
+                            <h4>弹性与高可用</h4>
+                            <p>提供连接池、重试、限流、指标暴露，方便挂到Prometheus/Grafana监控体系</p>
+                        </div>
                     </div>
-                    
-                    <div class="case-card">
-                        <h4>无代码/低代码集成</h4>
-                        <p>MCP网关将提供更友好的集成体验：</p>
-                        <ul>
-                            <li>可视化工具配置和编排界面</li>
-                            <li>拖拽式服务流程设计</li>
-                            <li>智能服务推荐和最佳实践建议</li>
-                            <li>自动化服务发现和注册</li>
-                        </ul>
+                </div>
+                
+                <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="400">
+                    <div class="card h-100 animated-card">
+                        <div class="card-body text-center">
+                            <div class="feature-icon">
+                                <i class="bi bi-file-earmark-text"></i>
+                            </div>
+                            <h4>安全审计与合规</h4>
+                            <p>集中记录模型调用的输入输出，满足PII/合规审计要求</p>
+                        </div>
                     </div>
-                    
-                    <div class="case-card">
-                        <h4>联邦与互操作性</h4>
-                        <p>跨组织和跨平台的MCP协作将成为重点：</p>
-                        <ul>
-                            <li>标准化MCP协议和接口规范</li>
-                            <li>跨平台MCP网关联邦</li>
-                            <li>去中心化身份和权限管理</li>
-                            <li>全球分布式MCP服务网络</li>
-                        </ul>
+                </div>
+                
+                <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="500">
+                    <div class="card h-100 animated-card">
+                        <div class="card-body text-center">
+                            <div class="feature-icon">
+                                <i class="bi bi-plugin"></i>
+                            </div>
+                            <h4>便捷注册发现</h4>
+                            <p>运维或开发只需在网关配置文件里登记Server地址，即可立即对外暴露工具目录，降低接入成本</p>
+                        </div>
                     </div>
                 </div>
             </div>
         </section>
         
-        <footer>
-            <p>© 2023-2024 MCP网关技术文档 | 本文档内容仅供参考，技术实现以实际系统为准</p>
-        </footer>
+        <!-- 企业落地价值 -->
+        <section id="value" class="section">
+            <div class="row">
+                <div class="col-lg-12 text-center">
+                    <h2 class="mb-4">企业落地价值</h2>
+                    <div class="divider"></div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="card" data-aos="fade-up">
+                        <div class="card-body">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item">
+                                    <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                    <strong class="highlight">一次接入，多处复用：</strong>
+                                    LLM-Agent、RAG、Copilot等前端应用只需连网关；当后端增加财务系统Server、BPM Server等，无需改客户端代码
+                                </li>
+                                <li class="list-group-item">
+                                    <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                    <strong class="highlight">降低改造成本：</strong>
+                                    旧系统可先用"REST→MCP"适配器挂到网关，逐步向原生MCP Server演进，避免大规模重构
+                                </li>
+                                <li class="list-group-item">
+                                    <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                    <strong class="highlight">安全可控：</strong>
+                                    集中身份、速率、审计，IT安全团队能沿用成熟的网关治理模型，而不必深入每个Server代码
+                                </li>
+                                <li class="list-group-item">
+                                    <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                    <strong class="highlight">观测与运维友好：</strong>
+                                    单点暴露SLO/SLA指标，Ops只需监控网关即可把握工具生态的整体健康度；也便于做压测与容量规划
+                                </li>
+                                <li class="list-group-item">
+                                    <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                    <strong class="highlight">促进"工具-即-服务"内部生态：</strong>
+                                    部门可独立迭代Server，网关自动上架工具目录，形成企业内的共享市场（tool marketplace）
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 已有MCP网关实践与项目 -->
+        <section id="practices" class="section">
+            <div class="row">
+                <div class="col-lg-12 text-center">
+                    <h2 class="mb-4">已有MCP网关实践与项目</h2>
+                    <div class="divider"></div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="card" data-aos="fade-up">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 25%">项目 / 组织</th>
+                                            <th style="width: 55%">亮点</th>
+                                            <th style="width: 20%">链接</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>acehoss/mcp-gateway</td>
+                                            <td>支持STDIO↔HTTP+SSE转换、负载均衡、多实例健康检查</td>
+                                            <td><a href="https://github.com/acehoss/mcp-gateway" target="_blank" class="btn btn-sm btn-outline-primary">GitHub <i class="bi bi-box-arrow-up-right"></i></a></td>
+                                        </tr>
+                                        <tr>
+                                            <td>mcp-ecosystem/mcp-gateway</td>
+                                            <td>"零改造"把现有REST/gRPC业务包成MCP Server，主打高性能Rust</td>
+                                            <td><a href="https://github.com/mcp-ecosystem/mcp-gateway" target="_blank" class="btn btn-sm btn-outline-primary">GitHub <i class="bi bi-box-arrow-up-right"></i></a></td>
+                                        </tr>
+                                        <tr>
+                                            <td>adamwattis/mcp-proxy-server</td>
+                                            <td>通过统一端点聚合多remote Server，带路由与缓存</td>
+                                            <td><a href="https://github.com/adamwattis/mcp-proxy-server" target="_blank" class="btn btn-sm btn-outline-primary">GitHub <i class="bi bi-box-arrow-up-right"></i></a></td>
+                                        </tr>
+                                        <tr>
+                                            <td>sparfenyuk/mcp-proxy</td>
+                                            <td>工具化STDIO↔SSE双向代理，适配Claude Desktop</td>
+                                            <td><a href="https://github.com/sparfenyuk/mcp-proxy" target="_blank" class="btn btn-sm btn-outline-primary">GitHub <i class="bi bi-box-arrow-up-right"></i></a></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Open WebUI mcpo</td>
+                                            <td>在WebUI里把MCP Server暴露为常见OpenAPI，使非AI系统也易调用</td>
+                                            <td><a href="#" target="_blank" class="btn btn-sm btn-outline-primary">文档 <i class="bi bi-file-earmark-text"></i></a></td>
+                                        </tr>
+                                        <tr>
+                                            <td>LiteLLM MCP Proxy</td>
+                                            <td>将LiteLLM代理与MCP工具目录整合，方便统一调用多模型</td>
+                                            <td><a href="#" target="_blank" class="btn btn-sm btn-outline-primary">文档 <i class="bi bi-file-earmark-text"></i></a></td>
+                                        </tr>
+                                        <tr>
+                                            <td>LangGraph MCP Gateway</td>
+                                            <td>langchain-mcp-adapters让LangChain/LangGraph Agent直接消费MCP工具，启动本地gateway一键代理</td>
+                                            <td><a href="#" target="_blank" class="btn btn-sm btn-outline-primary">文档 <i class="bi bi-file-earmark-text"></i></a></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Home-Assistant示例</td>
+                                            <td>用本地MCP-Proxy把智能家居暴露给Claude Desktop，通过SSE打通</td>
+                                            <td><a href="#" target="_blank" class="btn btn-sm btn-outline-primary">文档 <i class="bi bi-file-earmark-text"></i></a></td>
+                                        </tr>
+                                        <tr>
+                                            <td>企业实践</td>
+                                            <td>Replit、Codeium、Sourcegraph等在内部布署网关聚合自家代码/搜索/编译工具，官方在发布会演示中提到（Claude直播演示）</td>
+                                            <td></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 近期补充案例 -->
+            <div class="row mt-4">
+                <div class="col-lg-12">
+                    <div class="card" data-aos="fade-up">
+                        <div class="card-header">
+                            <h3 class="mb-0">近期补充：企业级MCP网关实践</h3>
+                        </div>
+                        <div class="card-body">
+                            <p>在过去一个月内，几家平台相继把MCP (Model Context Protocol) 网关做成了"开箱可用"的企业级能力：Zapier把6000+ SaaS动作无缝暴露给模型；腾讯云用网关统一管理多款云资源MCP Server；阿里百炼与Higress打造"托管+市场"模式，让企业只动鼠标就能把自有API转成MCP；Nacos则负责注册发现与"零改造升级"。这些方案的共同点是对外只留一个安全、可观测的入口，对内批量托管与编排MCP Server，大幅降低了企业把业务工具迁入LLM生态的门槛。</p>
+                
+                            <!-- 卡片组布局 -->
+                            <div class="row mt-4">
+                                <!-- Zapier MCP Gateway -->
+                                <div class="col-lg-6 mb-4">
+                                    <div class="card h-100 animated-card">
+                                        <div class="card-header">
+                                            <h4 class="mb-0">Zapier MCP Gateway</h4>
+                                        </div>
+                                        <div class="card-body">
+                                            <h5>定位</h5>
+                                            <p>充当<strong>"AI ↔ 6000+ SaaS"</strong>的即插即用转接头，模型只需调用一次网关，即可触发任意Zapier Action或搜索数据。</p>
+                                            
+                                            <h5>亮点</h5>
+                                            <ol>
+                                                <li>自动生成Tool目录：Zapier根据现有Zap自动映射出符合MCP Schema的工具，不用手写JSON。</li>
+                                                <li>OAuth安全托管：沿用Zapier的连接授权，网关层面不暴露敏感令牌。</li>
+                                                <li>低代码/零部署：完全云托管，企业只需在Claude Desktop等前端配置Gateway URL即可。</li>
+                                            </ol>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 腾讯云MCP网关 -->
+                                <div class="col-lg-6 mb-4">
+                                    <div class="card h-100 animated-card">
+                                        <div class="card-header">
+                                            <h4 class="mb-0">腾讯云MCP网关</h4>
+                                        </div>
+                                        <div class="card-body">
+                                            <h5>定位</h5>
+                                            <p>结合API Gateway + 自研MCP Server组合，让开发者用自然语言管理CVM、COS、TDSQL等云资源。</p>
+                                            
+                                            <h5>亮点</h5>
+                                            <ol>
+                                                <li>企业级IAM与审计：网关挂接腾讯云统一身份体系，调用过程可落地CLS日志审计。</li>
+                                                <li>多Server聚合：当前已上线4类官方MCP Server（计算、存储、网络、数据库），并支持自定义注册。</li>
+                                                <li>与API Gateway原生集成：继承重试、熔断、指标监控能力，平滑扩容。</li>
+                                            </ol>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 阿里云"百炼AI网关" & Higress Remote MCP -->
+                                <div class="col-lg-6 mb-4">
+                                    <div class="card h-100 animated-card">
+                                        <div class="card-header">
+                                            <h4 class="mb-0">阿里云"百炼AI网关" & Higress Remote MCP</h4>
+                                        </div>
+                                        <div class="card-body">
+                                            <h5>定位</h5>
+                                            <p>百炼提供"一键托管 + 市场分发"的全生命周期MCP平台；底层由Higress AI-Native Gateway负责流量治理与远程MCP Server托管。</p>
+                                            
+                                            <h5>亮点</h5>
+                                            <ol>
+                                                <li>函数计算弹性托管：自研或第三方MCP Server上传后即获得冷启动优化、按量计费能力。</li>
+                                                <li>首批预置服务：已内置高德地图、无影浏览器、Fetch等十余款常用工具，Agent可直接调用。</li>
+                                                <li>MCP Marketplace：Higress新上线市场，支持一键把现有OpenAPI/REST接口转换并上架，形成企业内外共享生态。</li>
+                                                <li>AI-Native网关特性：支持gRPC/HTTP双栈、Lua插件链、智能路由、灰度发布；为Tongyi Bailian、PAI等内部AI服务提供高并发入口。</li>
+                                            </ol>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Nacos MCP Registry -->
+                                <div class="col-lg-6 mb-4">
+                                    <div class="card h-100 animated-card">
+                                        <div class="card-header">
+                                            <h4 class="mb-0">Nacos MCP Registry</h4>
+                                        </div>
+                                        <div class="card-body">
+                                            <h5>定位</h5>
+                                            <p>作为服务注册中心 + 协议转换器，帮助微服务"零代码升级"为MCP Server，并把元数据同步给Higress网关。</p>
+                                            
+                                            <h5>亮点</h5>
+                                            <ol>
+                                                <li>零改造：现有REST/gRPC服务通过配置即可暴露MCP Schema，保持原调用仍可用。</li>
+                                                <li>动态治理：提供健康检查、权重路由、配置下发，与Spring Cloud Alibaba生态无缝集成。</li>
+                                            </ol>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 对比表格 -->
+                            <div class="mt-4">
+                                <h5 class="mb-3">对比一览</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>方案</th>
+                                                <th>主要服务对象</th>
+                                                <th>部署模式</th>
+                                                <th>特色能力</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Zapier</td>
+                                                <td>SaaS工作流</td>
+                                                <td>全托管</td>
+                                                <td>自动Tool生成、OAuth继承</td>
+                                            </tr>
+                                            <tr>
+                                                <td>腾讯云</td>
+                                                <td>云基础设施</td>
+                                                <td>PaaS/自托管</td>
+                                                <td>四类官方MCP Server、企业IAM</td>
+                                            </tr>
+                                            <tr>
+                                                <td>阿里百炼 + Higress</td>
+                                                <td>企业自研API & 生态合作伙伴</td>
+                                                <td>函数计算 + 开源网关</td>
+                                                <td>市场化分发、AI-Native流量治理</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Nacos Registry</td>
+                                                <td>内部微服务</td>
+                                                <td>自托管</td>
+                                                <td>零改造注册、动态发现</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <!-- 小结 -->
+                            <div class="mt-4">
+                                <h5>小结</h5>
+                                <ul>
+                                    <li>Zapier适合"让LLM直连SaaS自动化"。</li>
+                                    <li>腾讯云侧重"把云资源管理入口自然语言化"。</li>
+                                    <li>百炼 + Higress提供"托管 + 市场 + 高性能网关"一站式路线。</li>
+                                    <li>Nacos补位服务注册，帮存量微服务快速跨入MCP时代。</li>
+                                </ul>
+                                <p>依托这些网关，企业可以在"安全、弹性、低代码"的统一入口下，迅速把各类工具和数据流接入Agent生态，实现业务流程AI-化、工具生态资产化的双赢局面。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- MCP网关 vs. MCP Server：分工与协同 -->
+        <section id="relationship" class="section">
+            <div class="row">
+                <div class="col-lg-12 text-center">
+                    <h2 class="mb-4">MCP网关 vs. MCP Server：分工与协同</h2>
+                    <div class="divider"></div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="card" data-aos="fade-up">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 20%">维度</th>
+                                            <th style="width: 40%">MCP Server</th>
+                                            <th style="width: 40%">MCP网关</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><strong>角色定位</strong></td>
+                                            <td>"单一工具/资源"的提供者（例如数据库查询、Git操作）</td>
+                                            <td>"工具集调度与守门员"的聚合者/守门员</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>面向对象</strong></td>
+                                            <td>关注实现业务逻辑、数据访问、边界最小化</td>
+                                            <td>关注多Server编排、认证、限流、监控</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>协议实现</strong></td>
+                                            <td>必须遵循MCP工具/资源schema，默认支持STDIO/gRPC传输</td>
+                                            <td>可以对外继续暴露MCP接口，但内部连接可多样；充当"上游也是Server，下游是多个Server"的洋葱层</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>类比</strong></td>
+                                            <td>微服务</td>
+                                            <td>API Gateway / Service Mesh的入口</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>关系</strong></td>
+                                            <td colspan="2">多个MCP Server → 注册到 → MCP网关；网关自己也可伪装成"统一大Server"供客户端调用，实现递归组合</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <!-- 小结 -->
+                            <div class="mt-5">
+                                <h4>小结</h4>
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item">
+                                        <i class="bi bi-check2-circle text-info me-2"></i>
+                                        <strong>一句话辨析：</strong>Server负责"提供工具"，网关负责"组合 + 看门 + 变流量"；
+                                    </li>
+                                    <li class="list-group-item">
+                                        <i class="bi bi-check2-circle text-info me-2"></i>
+                                        <strong>落地顺序建议：</strong>先让各部门把现有API/数据源"包"成最小可用MCP Server，再以网关统一治理、暴露和监控，最后把LLM-Agent或应用接到网关即可；
+                                    </li>
+                                    <li class="list-group-item">
+                                        <i class="bi bi-check2-circle text-info me-2"></i>
+                                        <strong>进阶：</strong>企业可以在网关层加入插件体系（审计、水印、RAG缓存）或以Service Mesh方式做东西向通信，构建可演化的AI-tool平台。
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
     </div>
 
+    <!-- 页脚 -->
+    <footer class="text-center py-4 mt-5" style="background-color: var(--primary-color);">
+        <div class="container">
+            <p class="mb-0">MCP网关技术解析 &copy; 2023</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript库 -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // 初始化所有章节为展开状态
-            const sectionHeadings = document.querySelectorAll('h2');
+            // 初始化AOS动画库
+            AOS.init({
+                duration: 800,
+                easing: 'ease-in-out',
+                once: true
+            });
             
-            sectionHeadings.forEach(heading => {
-                heading.addEventListener('click', function() {
-                    // 切换标题的折叠状态
-                    this.classList.toggle('collapsed');
+            // 平滑滚动
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
                     
-                    // 找到并切换内容区域的折叠状态
-                    const content = this.nextElementSibling;
-                    content.classList.toggle('collapsed');
+                    const targetId = this.getAttribute('href');
+                    const targetElement = document.querySelector(targetId);
+                    
+                    if (targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 70, // 减去导航栏高度
+                            behavior: 'smooth'
+                        });
+                    }
                 });
             });
         });
